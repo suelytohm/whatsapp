@@ -4,9 +4,12 @@ const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const io = require('socket.io-client');
 
+const axios = require('axios').default;
+const wservice = "https://test-boletos.onrender.com";
+
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: 'celcoin'
+        dataPath: 'celcoin2'
     })
 });
  
@@ -63,30 +66,47 @@ async function enviarComprovante(numeroDestinatario, user, nomeComprovante, data
     });
 }
 
-function consultaBancoDeDados(numero){
-    let obj = {
-        numero: '558791087013@c.us',
-        nome: 'suelytohm',
-        saldo: 120
+
+async function consultaSaldo(numero){
+    try {
+        const response = await axios.get(wservice + '/user/telefone/' + numero);
+        return response.data[0];
+    } catch (error) {
+        console.log(error);
+        return null; // ou lança uma exceção, dependendo do comportamento desejado
     }
-    return obj
+}
+
+
+function formatarValor(numero){
+    return numero.toFixed(2).replace(".", ","); // Substitui o ponto pela vírgula
+}
+
+
+function verificarNumero(telefone){
+    let numero = "";
+
+    if(telefone.length == 11){
+        let numeroFim = telefone.substring(3, telefone.length)
+        let numeroInicio = telefone.substring(0, 2)
+        numero = `${numeroInicio}${numeroFim}`;
+    } else {
+        numero = telefone
+    }
+    return `55${numero}@c.us`
 }
 
 
 client.on('message', async (message) => {
-	if (message.body === '!ping') {
-		await message.reply('pong');
-	}
-});
+    const obj = await consultaSaldo(message.from);
 
-client.on('message', async (message) => {
-    const obj = consultaBancoDeDados(message.from)
-
-	if (message.body === 'saldo') {
-        if(message.from === obj.numero)
-        await message.reply(`Seu saldo é: R$ ${obj.saldo}`);
-		// await client.sendMessage(message.from, `Seu saldo é: R$ ${obj.saldo}`);
-	}
+    if ((message.body === 'saldo') || (message.body === 'Saldo')) {
+        if (obj && message.from === verificarNumero(obj.telefone)) {
+            await message.reply(`Seu saldo é: R$ ${formatarValor(obj.saldo)}`);
+        } else {
+            console.log('Erro ao obter dados do banco de dados');
+        }
+    }
 });
 
 

@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 celcoin
+celcoin2
+celcoin3
 .wwebjs_cache
 comprovantes
 whatsapp-web.rar

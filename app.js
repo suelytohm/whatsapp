@@ -5,7 +5,6 @@ const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const io = require('socket.io-client');
 
-
 const app = express();
 const port = 3005;
 
@@ -111,10 +110,6 @@ function dataAtual(){
 }
 
 
-
-
-
-
 // Substitua 'http://localhost:3000' pela URL do seu servidor Socket.IO
 const socket = io('https://test-boletos.onrender.com');
 
@@ -138,9 +133,6 @@ socket.on('enviar comprovante', (data) => {
 socket.on('disconnect', () => {
     console.log('Desconectado do servidor Socket.IO');
 });
-
-
-
 
 
 app.listen(port, () => {
