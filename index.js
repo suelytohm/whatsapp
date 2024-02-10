@@ -4,8 +4,14 @@ const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const io = require('socket.io-client');
 
+const Payload = require('./payloadPix');
+
+
 const axios = require('axios').default;
 const wservice = "https://test-boletos.onrender.com";
+
+
+let objeto = {}
 
 const client = new Client({
     authStrategy: new LocalAuth({
@@ -106,7 +112,111 @@ client.on('message', async (message) => {
         } else {
             console.log('Erro ao obter dados do banco de dados');
         }
+        objeto = {}
     }
+});
+
+
+
+client.on('message', async (message) => {
+    const obj = await consultaSaldo(message.from);
+
+    if(message.body === 'Depositar') {
+        await message.reply(`Qual o valor que você deseja depositar?`);
+        
+        objeto = {}
+    }
+});
+
+
+
+
+
+client.on('message', async (message) => {
+    if((objeto.tipo === "boleto") && (message.body === 'Pagar boleto') || (message.body === 'pagar boleto') || (message.body === 'Boleto') || (message.body === 'boleto') || (message.body === 'PAGAR BOLETO')) {
+        objeto = {
+            tipo: 'boleto',
+            numero: message.from,
+            passo: 1,
+        }
+        await client.sendMessage(message.from, `Informe o valor a ser pago`);
+    }
+
+    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 1)){
+
+
+        150 - 200
+        150 - 20
+
+
+        const obj = await consultaSaldo(message.from);
+        let total = message.body // parseFloat
+
+        let restante = obj.saldo - message.body // parseFloat
+
+        if(obj.saldo - total < 0){
+            // restante = Math.abs(restante)
+        }
+
+        objeto = {
+            tipo: 'boleto',
+            numero: message.from,
+            passo: 2,
+            totalBoleto: total,
+            restante: restante
+        }
+
+        if(restante < 0){
+            "SEU SALDO É R$ 10, Copie o código abaixo e deposite o restante via pix"
+        }
+
+
+
+
+        if(restante < 0){
+            await client.sendMessage(message.from, `Seu saldo é: R$ ${formatarValor(obj.saldo)}, Copie o código abaixo e deposite o restante via pix:`);
+
+            const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(restante).toString(), 'SAO PAULO', 'deposito');
+
+            await client.sendMessage(message.from, payloadInstance.gerarPayload());
+            await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
+
+        } else {
+            objeto = {
+                tipo: 'boleto',
+                numero: message.from,
+                passo: 2,
+            }
+            // await client.sendMessage(message.from, `Deseja prosseguir com o pagamento?`);
+            await client.sendMessage(message.from, `Seu saldo agora é: R$ ${formatarValor(obj.saldo)}, Deseja realizar o pagamento agora?`);
+        }
+    }
+
+    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 2)){
+        const obj = await consultaSaldo(message.from);
+        // await client.sendMessage(message.from, `Seu saldo é: R$ ${formatarValor(obj.saldo)}, Deseja realizar o pagamento agora?`);
+    }
+    
+    // Continuar com pagamento
+    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 4)){
+        await client.sendMessage(message.from, 'Deseja prosseguir com o pagamento?')
+    }
+
+    // Tipo
+    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 5)){
+        await client.sendMessage(message.from, 'Informe o tipo de boleto: \n\n1 - Cartão\n2 - Celpe\n3 - Compesa\n4 - Depósito\n5 - Financiamento\n6 - Internet/Celular\n7 - Outro')
+    }
+    
+    // Números
+    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 6)){
+        await client.sendMessage(message.from, 'Informe os números do boleto')
+    }
+
+    // Envio
+    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 7)){
+        await client.sendMessage(message.from, 'Tudo certo! Aguarde que estamos realizando o pagamento, em breve o seu comprovante estará disponível!')
+    }
+
 });
 
 
