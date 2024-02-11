@@ -3,8 +3,12 @@ const { Client, MessageMedia, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const fs = require('fs');
 const io = require('socket.io-client');
+const path = require('path');
 
 const Payload = require('./payloadPix');
+const Identificador = require('./Identificador');
+const ImageResizer = require('./ImageResizer');
+const ImageTextExtractor = require('./ImageTextExtractor');
 
 
 const axios = require('axios').default;
@@ -15,7 +19,7 @@ let objeto = {}
 
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: 'celcoin2'
+        dataPath: 'celcoin3'
     })
 });
  
@@ -146,14 +150,15 @@ client.on('message', async (message) => {
         total = total.replace(",", ".")
         total = parseFloat(total).toFixed(2)
 
-        let idPagamento = 'deposito';
+        let a = new Identificador()
+        let idPagamento = a.gerarLetrasAleatorias();
+
 
         await client.sendMessage(message.from, `Copie o código abaixo e deposite via pix:`);
-
         const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(total).toString(), 'SAO PAULO', idPagamento);
         await client.sendMessage(message.from, payloadInstance.gerarPayload());        
-        await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
-
+        // await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
+        await client.sendMessage(message.from, `⚠ Envie o comprovante da transferência após a realização do pagamento`);
 
         objeto = {
             tipo: 'deposito',
@@ -165,24 +170,130 @@ client.on('message', async (message) => {
     }
 
     else if((objeto.tipo == 'deposito') && (objeto.passo == 2)){
-        if(message.body == 'Sim'){
-
-            const obj = await consultaSaldo(message.from);
-            let saldoAtual = obj.saldo + objeto.valor;
-
-            let idUser = obj.id;
-
-            axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
-                await client.sendMessage(message.from, `Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
-            })
-
-
-            objeto = {}
+        if (message.hasMedia && message.type === 'image') {
+            try {
+                (async () => {
+                    const media = await message.downloadMedia();
+                    const fileName = `${message.from}-${message.timestamp}.${media.mimetype.split('/')[1]}`;
+                    const filePath = path.join(__dirname, 'comprovantes/pix/original/', fileName);
+                    fs.writeFileSync(filePath, media.data, 'base64');
+                    console.log(`Imagem salva como: ${filePath}`);
+                    
+                    //let ar = Aumentar Resolução(filePath)
+                    const imagePath = filePath;
+                    const outputPath = path.join(__dirname, 'comprovantes/pix/redimensionado/', fileName);
+                    const resizer = new ImageResizer(imagePath);
+                    let convertida = await resizer.resizeAndSave(outputPath);
+            
+                    // console.log("Valor convertida: " + convertida)    
+                    console.log("Imagem convertida: " + convertida)
+            
+                    let caminhoArquivo = "";
+            
+                    // Exemplo de instanciação e uso da classe
+                    if(process.env.SO == 'windows'){
+                        caminhoArquivo = `C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\${fileName}`;
+                        
+                    } else {
+                        caminhoArquivo = `/home/suelytohm/Desktop/scripts/comprovantes/${fileName}`; // ----------------------- ALTERAR DEPOIS ----------------
+                    }
+        
+                
+                    setTimeout(async () => {
+                        
+                        const extractor = new ImageTextExtractor(caminhoArquivo);
+                        const extractedText = await extractor.extractText();
+                    
+                        if (extractedText && extractedText.includes(objeto.idPagamento)) {
+                            console.log("A imagem contém o identificador correto: " + objeto.idPagamento);
+            
+                            const obj = await consultaSaldo(message.from);
+                            let saldoAtual = obj.saldo + objeto.valor;
+    
+                            let idUser = obj.id;
+    
+                            axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
+                                await client.sendMessage(message.from, `Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
+                            })
+    
+                            objeto = {}
+    
+                        } else {
+                            console.log("A string não contém o identificador correto: " + objeto.idPagamento);
+                        }
+                    }, 3000);
+    
+                })();
+            } catch (error) {
+                console.error('Erro ao salvar a imagem:', error);
+            }
         }
     }
 });
 
 
+
+
+client.on('message', async (message) => {
+    if (message.hasMedia && message.type === 'image') {
+        try {
+            (async () => {
+                const media = await message.downloadMedia();
+                const fileName = `${message.from}-${message.timestamp}.${media.mimetype.split('/')[1]}`;
+                const filePath = path.join(__dirname, 'comprovantes/pix/original/', fileName);
+                fs.writeFileSync(filePath, media.data, 'base64');
+                console.log(`Imagem salva como: ${filePath}`);
+                
+                //let ar = Aumentar Resolução(filePath)
+                const imagePath = filePath;
+                const outputPath = path.join(__dirname, 'comprovantes/pix/redimensionado/', fileName);
+                const resizer = new ImageResizer(imagePath);
+                let convertida = await resizer.resizeAndSave(outputPath);
+        
+                // console.log("Valor convertida: " + convertida)    
+                console.log("Imagem convertida: " + convertida)
+        
+                let caminhoArquivo = "";
+        
+                // Exemplo de instanciação e uso da classe
+                if(process.env.SO == 'windows'){
+                    caminhoArquivo = `C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\${fileName}`;
+                    
+                } else {
+                    caminhoArquivo = `/home/suelytohm/Desktop/scripts/comprovantes/${fileName}`; // ----------------------- ALTERAR DEPOIS ----------------
+                }
+    
+            
+                setTimeout(async () => {
+                    
+                    const extractor = new ImageTextExtractor(caminhoArquivo);
+                    const extractedText = await extractor.extractText();
+                
+                    if (extractedText && extractedText.includes("KZYBSH")) {
+                        console.log("A imagem contém o identificador correto: " + "KZYBSH");
+        
+                        const obj = await consultaSaldo(message.from);
+                        let saldoAtual = obj.saldo + objeto.valor;
+
+                        let idUser = obj.id;
+
+                        axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
+                            await client.sendMessage(message.from, `Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
+                        })
+
+                        objeto = {}
+
+                    } else {
+                        console.log("A string não contém o identificador correto: " + "KZYBSH");
+                    }
+                }, 3000);
+
+            })();
+        } catch (error) {
+            console.error('Erro ao salvar a imagem:', error);
+        }
+    }
+})
 
 
 

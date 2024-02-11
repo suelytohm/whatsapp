@@ -15,7 +15,6 @@ celcoin
 celcoin2
 celcoin3
 .wwebjs_cache
-comprovantes
 whatsapp-web.rar
 
 # Editor directories and files
@@ -29,3 +28,7 @@ whatsapp-web.rar
 *.sln
 *.sw?
 .env
+*.pdf
+*.jpg
+*.jpeg
+*.png

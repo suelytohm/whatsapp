@@ -1,22 +1,15 @@
-const sharp = require('sharp');
+const ImageTextExtractor = require('./ImageTextExtractor');
 
-// Caminho para a imagem original
-const imagePath = './comprovantes/2.jpeg';
+let convertida = "C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\558791087013@c.us-1707683802.jpeg";
+// let convertida = "C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\558791087013@c.us-1707682294.jpeg";
 
-// Caminho para salvar a imagem redimensionada
-const outputPath = './comprovantes/3.jpg';
+(async () => {
+    const extractor = new ImageTextExtractor(convertida);
+    const extractedText = await extractor.extractText();
 
-// Dimensões desejadas para a imagem redimensionada
-const width = 1440;
-const height = 4164;
-
-// Redimensionamento da imagem
-sharp(imagePath)
-  .resize(width, height)
-  .toFile(outputPath, (err, info) => {
-    if (err) {
-      console.error('Erro ao redimensionar a imagem:', err);
+    if (extractedText && extractedText.includes("LWBXOK")) {
+        console.log("A imagem contém o identificador correto: LWBXOK");
     } else {
-      console.log('Imagem redimensionada com sucesso:', info);
+        console.log("Não contém o identificador correto");
     }
-  });
+})();
