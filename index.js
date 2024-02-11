@@ -117,6 +117,13 @@ client.on('message', async (message) => {
 });
 
 
+client.on('message', async (message) => {
+    if(message.body == 'Sair'){
+        await message.reply(`Atendimento finalizado!`);
+        objeto = {}
+    }
+})
+
 
 client.on('message', async (message) => {
     const obj = await consultaSaldo(message.from);
@@ -124,7 +131,54 @@ client.on('message', async (message) => {
     if(message.body === 'Depositar') {
         await message.reply(`Qual o valor que você deseja depositar?`);
         
-        objeto = {}
+        objeto = {
+            tipo: 'deposito',
+            numero: message.from,
+            passo: 1,
+        }
+    }
+    
+    else if((objeto.tipo == 'deposito') && (objeto.passo == 1)){
+        let total = message.body // parseFloat
+        total = total.replace("R", "")
+        total = total.replace("$", "")
+        total = total.replace(" ", "")
+        total = total.replace(",", ".")
+        total = parseFloat(total).toFixed(2)
+
+        let idPagamento = 'deposito';
+
+        await client.sendMessage(message.from, `Copie o código abaixo e deposite via pix:`);
+
+        const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(total).toString(), 'SAO PAULO', idPagamento);
+        await client.sendMessage(message.from, payloadInstance.gerarPayload());        
+        await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
+
+
+        objeto = {
+            tipo: 'deposito',
+            numero: message.from,
+            passo: 2,
+            valor: Math.abs(total),
+            idPagamento: idPagamento
+        }
+    }
+
+    else if((objeto.tipo == 'deposito') && (objeto.passo == 2)){
+        if(message.body == 'Sim'){
+
+            const obj = await consultaSaldo(message.from);
+            let saldoAtual = obj.saldo + objeto.valor;
+
+            let idUser = obj.id;
+
+            axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
+                await client.sendMessage(message.from, `Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
+            })
+
+
+            objeto = {}
+        }
     }
 });
 
@@ -144,15 +198,16 @@ client.on('message', async (message) => {
 
     else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 1)){
 
-
-        150 - 200
-        150 - 20
-
-
         const obj = await consultaSaldo(message.from);
         let total = message.body // parseFloat
 
-        let restante = obj.saldo - message.body // parseFloat
+        total = total.replace("R", "")
+        total = total.replace("$", "")
+        total = total.replace(" ", "")
+        total = total.replace(",", ".")
+        total = parseFloat(total).toFixed(2)
+
+        let restante = obj.saldo - total
 
         if(obj.saldo - total < 0){
             // restante = Math.abs(restante)
@@ -165,13 +220,6 @@ client.on('message', async (message) => {
             totalBoleto: total,
             restante: restante
         }
-
-        if(restante < 0){
-            "SEU SALDO É R$ 10, Copie o código abaixo e deposite o restante via pix"
-        }
-
-
-
 
         if(restante < 0){
             await client.sendMessage(message.from, `Seu saldo é: R$ ${formatarValor(obj.saldo)}, Copie o código abaixo e deposite o restante via pix:`);
