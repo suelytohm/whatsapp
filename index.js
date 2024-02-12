@@ -106,6 +106,25 @@ function verificarNumero(telefone){
     return `55${numero}@c.us`
 }
 
+async function receberPix(telefone, valor){
+    let a = new Identificador()
+    let idPagamento = a.gerarLetrasAleatorias();
+
+    await client.sendMessage(telefone, `Copie o código abaixo e deposite via pix:`);
+    const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(valor).toString(), 'SAO PAULO', idPagamento);
+    await client.sendMessage(telefone, payloadInstance.gerarPayload());        
+    // await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
+    await client.sendMessage(telefone, `⚠ Envie o comprovante da transferência após a realização do pagamento`);
+
+    objeto = {
+        tipo: 'deposito',
+        numero: telefone,
+        passo: 2,
+        valor: Math.abs(valor),
+        idPagamento: idPagamento
+    }
+}
+
 
 client.on('message', async (message) => {
     const obj = await consultaSaldo(message.from);
@@ -130,8 +149,6 @@ client.on('message', async (message) => {
 
 
 client.on('message', async (message) => {
-    const obj = await consultaSaldo(message.from);
-
     if(message.body === 'Depositar') {
         await message.reply(`Qual o valor que você deseja depositar?`);
         
@@ -150,31 +167,37 @@ client.on('message', async (message) => {
         total = total.replace(",", ".")
         total = parseFloat(total).toFixed(2)
 
-        let a = new Identificador()
-        let idPagamento = a.gerarLetrasAleatorias();
 
+        receberPix(message.from, Math.abs(total))
 
-        await client.sendMessage(message.from, `Copie o código abaixo e deposite via pix:`);
-        const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(total).toString(), 'SAO PAULO', idPagamento);
-        await client.sendMessage(message.from, payloadInstance.gerarPayload());        
-        // await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
-        await client.sendMessage(message.from, `⚠ Envie o comprovante da transferência após a realização do pagamento`);
+        // let a = new Identificador()
+        // let idPagamento = a.gerarLetrasAleatorias();
 
-        objeto = {
-            tipo: 'deposito',
-            numero: message.from,
-            passo: 2,
-            valor: Math.abs(total),
-            idPagamento: idPagamento
-        }
+        // await client.sendMessage(message.from, `Copie o código abaixo e deposite via pix:`);
+        // const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(total).toString(), 'SAO PAULO', idPagamento);
+        // await client.sendMessage(message.from, payloadInstance.gerarPayload());        
+        // // await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
+        // await client.sendMessage(message.from, `⚠ Envie o comprovante da transferência após a realização do pagamento`);
+
+        // objeto = {
+        //     tipo: 'deposito',
+        //     numero: message.from,
+        //     passo: 2,
+        //     valor: Math.abs(total),
+        //     idPagamento: idPagamento
+        // }
     }
 
     else if((objeto.tipo == 'deposito') && (objeto.passo == 2)){
         if (message.hasMedia && message.type === 'image') {
+            const obj = await consultaSaldo(message.from);
+            await client.sendMessage(message.from, `Aguarde um instante enquanto verificamos as informações...`);
+
             try {
                 (async () => {
                     const media = await message.downloadMedia();
-                    const fileName = `${message.from}-${message.timestamp}.${media.mimetype.split('/')[1]}`;
+                    let ms = Date.now()
+                    const fileName = `${message.from}-${ms}.${media.mimetype.split('/')[1]}`;
                     const filePath = path.join(__dirname, 'comprovantes/pix/original/', fileName);
                     fs.writeFileSync(filePath, media.data, 'base64');
                     console.log(`Imagem salva como: ${filePath}`);
@@ -213,15 +236,17 @@ client.on('message', async (message) => {
                             let idUser = obj.id;
     
                             axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
-                                await client.sendMessage(message.from, `Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
+                                await client.sendMessage(message.from, `✔ Tudo certo! Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
                             })
     
                             objeto = {}
     
                         } else {
                             console.log("A string não contém o identificador correto: " + objeto.idPagamento);
+                            await client.sendMessage(message.from, `❌ Desculpe, mas ocorreu um erro. Verifique o comprovante e tente novamente!`);
+
                         }
-                    }, 3000);
+                    }, 4000);
     
                 })();
             } catch (error) {
@@ -231,11 +256,9 @@ client.on('message', async (message) => {
     }
 });
 
-
-
-
+/*
 client.on('message', async (message) => {
-    if (message.hasMedia && message.type === 'image') {
+    if (message.hasMedia && message.type === 'image' && objeto == {}) {
         try {
             (async () => {
                 const media = await message.downloadMedia();
@@ -294,7 +317,7 @@ client.on('message', async (message) => {
         }
     }
 })
-
+*/
 
 
 client.on('message', async (message) => {
@@ -413,8 +436,12 @@ socket.on('enviar comprovante', async (data) => {
     const response = await enviarComprovante(data.telefone, data.usuario, data.nomecomprovante, data.datapagamento, data.valor, data.tipoPagamento)
     console.log('Dados recebidos do servidor:', data);
     console.log(response);
+});
 
-    // Faça alguma ação com os dados recebidos aqui
+socket.on('depositar', async (data) => {
+    const response = await receberPix(`55${data.telefone}@c.us`, data.valor)
+    console.log('Dados recebidos do servidor:', data);
+    console.log(response);
 });
 
 // Evento de desconexão
