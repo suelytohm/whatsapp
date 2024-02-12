@@ -1,15 +1,19 @@
-const ImageTextExtractor = require('./ImageTextExtractor');
+function verificarNumero(telefone){
+    let numero = "";
 
-let convertida = "C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\558791087013@c.us-1707683802.jpeg";
-// let convertida = "C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\558791087013@c.us-1707682294.jpeg";
-
-(async () => {
-    const extractor = new ImageTextExtractor(convertida);
-    const extractedText = await extractor.extractText();
-
-    if (extractedText && extractedText.includes("LWBXOK")) {
-        console.log("A imagem contém o identificador correto: LWBXOK");
-    } else {
-        console.log("Não contém o identificador correto");
+    if(telefone.includes("@")){
+        return telefone
     }
-})();
+
+    if(telefone.length == 11){
+        let numeroFim = telefone.substring(3, telefone.length)
+        let numeroInicio = telefone.substring(0, 2)
+        numero = `${numeroInicio}${numeroFim}`;
+    } else {
+        numero = telefone
+    }
+    return `55${numero}@c.us`
+}
+
+
+console.log(verificarNumero("87991087013"))

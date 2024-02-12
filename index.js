@@ -64,7 +64,7 @@ async function enviarComprovante(numeroDestinatario, user, nomeComprovante, data
     const mensagem = `Olá ${capitalize(user)}, aqui está o seu comprovante! \n\n${tipoPagamento}\nData do pagamento: ${datapagamento}\nValor: R$ ${valor} \n\n${dataAtual()}`
     const media = MessageMedia.fromFilePath(caminhoArquivo);
 
-    client.sendMessage(`55${numeroDestinatario}@c.us`, media, { caption: mensagem })
+    client.sendMessage(`55${numeroDestinatario}@c.us`, media, { caption: mensagem }) // ----------------------------- VERIFICAR VALIDAÇÃO DO NÚMERO
     .then(() => {
         sleep(5000);
         console.log('Arquivo enviado com sucesso!');
@@ -94,6 +94,11 @@ function formatarValor(numero){
 
 
 function verificarNumero(telefone){
+
+    if(telefone.includes("@")){
+        return telefone
+    }
+
     let numero = "";
 
     if(telefone.length == 11){
@@ -110,15 +115,15 @@ async function receberPix(telefone, valor){
     let a = new Identificador()
     let idPagamento = a.gerarLetrasAleatorias();
 
-    await client.sendMessage(telefone, `Copie o código abaixo e deposite via pix:`);
+    await client.sendMessage(verificarNumero(telefone), `Copie o código abaixo e deposite via pix:`);
     const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(valor).toString(), 'SAO PAULO', idPagamento);
-    await client.sendMessage(telefone, payloadInstance.gerarPayload());        
+    await client.sendMessage(verificarNumero(telefone), payloadInstance.gerarPayload());        
     // await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
-    await client.sendMessage(telefone, `⚠ Envie o comprovante da transferência após a realização do pagamento`);
+    await client.sendMessage(verificarNumero(telefone), `⚠ Envie o comprovante da transferência após a realização do pagamento`);
 
     objeto = {
         tipo: 'deposito',
-        numero: telefone,
+        numero: verificarNumero(telefone),
         passo: 2,
         valor: Math.abs(valor),
         idPagamento: idPagamento
@@ -439,7 +444,7 @@ socket.on('enviar comprovante', async (data) => {
 });
 
 socket.on('depositar', async (data) => {
-    const response = await receberPix(`55${data.telefone}@c.us`, data.valor)
+    const response = await receberPix(data.telefone, data.valor)
     console.log('Dados recebidos do servidor:', data);
     console.log(response);
 });
