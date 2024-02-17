@@ -10,6 +10,10 @@ const Identificador = require('./Identificador');
 const ImageResizer = require('./ImageResizer');
 const ImageTextExtractor = require('./ImageTextExtractor');
 const PdfTextExtractor = require('./PdfTextExtractor');
+const Categorias = require('./Categorias');
+
+
+// AGENDAR PAGAMENTO DE BOLETOS
 
 
 const axios = require('axios').default;
@@ -40,6 +44,18 @@ async function sleep(miliseconds) {
 
 function capitalize(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function validarNumeroBoleto(boleto) {
+    // Expressão regular para verificar se o boleto contém apenas números, pontos, espaços e traços
+    var regex = /^[0-9 .-]+$/;
+    
+    // Verifica se o boleto corresponde à expressão regular
+    if (regex.test(boleto)) {
+        return true; // Boleto válido
+    } else {
+        return false; // Boleto inválido
+    }
 }
 
 function dataAtual(){
@@ -113,23 +129,33 @@ async function consultaSaldo(numero){
 }
 
 
-async function receberPix(telefone, valor){
+async function receberPix(telefone, valor, tipoRecebimento){
     let a = new Identificador()
     let idPagamento = a.gerarLetrasAleatorias();
+    let restante = ''
 
-    await client.sendMessage(verificarNumero(telefone), `Copie o código abaixo e deposite via pix:`);
+
+    if((tipoRecebimento == 'boleto') || (tipoRecebimento == 'teste boleto')){
+        restante = ' o restante'
+    }
+
+    await client.sendMessage(verificarNumero(telefone), `Copie o código abaixo e deposite${restante} via pix:`);
     const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(valor).toString(), 'SAO PAULO', idPagamento);
     await client.sendMessage(verificarNumero(telefone), payloadInstance.gerarPayload());        
     // await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
     await client.sendMessage(verificarNumero(telefone), `⚠ Envie o comprovante da transferência após a realização do pagamento`);
 
-    objeto = {
-        tipo: 'deposito',
-        numero: verificarNumero(telefone),
-        passo: 2,
-        valor: Math.abs(valor),
-        idPagamento: idPagamento
-    }
+    // objeto = {
+    //     tipo: tipoRecebimento,
+    //     numero: verificarNumero(telefone),
+    //     passo: 2,
+    //     valor: Math.abs(valor),
+    //     idPagamento: idPagamento
+    // }
+    objeto[passo] = 2;
+    objeto[valorPixRecebido] = Math.abs(valor);
+    objeto[idPagamento] = idPagamento;
+
 }
 
 
@@ -174,107 +200,115 @@ client.on('message', async (message) => {
         total = total.replace(",", ".")
         total = parseFloat(total).toFixed(2)
 
-        receberPix(message.from, Math.abs(total))
+        receberPix(message.from, Math.abs(total), 'deposito')
     }
 
-    else if((objeto.tipo == 'deposito') && (objeto.passo == 2)){
-        const media = await message.downloadMedia();
-        if (message.hasMedia && media.mimetype === 'application/pdf') {
+    else if((objeto.tipo == 'deposito') || (objeto.tipo == 'boleto') || (objeto.tipo == 'teste boleto') && (objeto.passo == 2)){
+        if(message.hasMedia){
+            await client.sendMessage(message.from, `Aguarde um instante enquanto verificamos as informações...`);
+
             const media = await message.downloadMedia();
             let ms = Date.now()
             const fileName = `${message.from}-${ms}.${media.mimetype.split('/')[1]}`;
             const filePath = path.join(__dirname, 'comprovantes/pix/original/', fileName);
             fs.writeFileSync(filePath, media.data, 'base64');
 
-            const pdf = new PdfTextExtractor(filePath);
-            pdf.extractText()
-            .then(async (extractedText) => {
-                console.log(extractedText);
-                console.log(objeto.idPagamento);
-                if (extractedText && extractedText.includes(objeto.idPagamento)) {
-                    console.log("A imagem contém o identificador correto: " + objeto.idPagamento);
-    
-                    const obj = await consultaSaldo(message.from);
-                    let saldoAtual = obj.saldo + objeto.valor;
-    
-                    let idUser = obj.id;
-    
-                    axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
-                        await client.sendMessage(message.from, `✔ Tudo certo! Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
-                    })
-    
-                    objeto = {}
-    
-                } else {
-                    console.log("A string não contém o identificador correto: " + objeto.idPagamento);
-                    await client.sendMessage(message.from, `❌ Desculpe, mas ocorreu um erro. Verifique o comprovante e tente novamente!`);
-                }
-            })
-            .catch(error => {
-                console.error(error);
-            });
-        }
-
-        else if (message.hasMedia && message.type === 'image') {
-            const obj = await consultaSaldo(message.from);
-            await client.sendMessage(message.from, `Aguarde um instante enquanto verificamos as informações...`);
-
-            try {
-                (async () => {
-                    const media = await message.downloadMedia();
-                    let ms = Date.now()
-                    const fileName = `${message.from}-${ms}.${media.mimetype.split('/')[1]}`;
-                    const filePath = path.join(__dirname, 'comprovantes/pix/original/', fileName);
-                    fs.writeFileSync(filePath, media.data, 'base64');
-                    console.log(`Imagem salva como: ${filePath}`);
-                    
-                    //let ar = Aumentar Resolução(filePath)
-                    const imagePath = filePath;
-                    const outputPath = path.join(__dirname, 'comprovantes/pix/redimensionado/', fileName);
-                    const resizer = new ImageResizer(imagePath);
-                    let convertida = await resizer.resizeAndSave(outputPath);
-            
-                    // console.log("Valor convertida: " + convertida)    
-                    console.log("Imagem convertida: " + convertida)
-                                
-                    let caminhoArquivo = "";
-                    // Exemplo de instanciação e uso da classe
-                    if(process.env.SO == 'windows'){
-                        caminhoArquivo = `C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\${fileName}`;
-                        
-                    } else {
-                        caminhoArquivo = `/home/suelytohm/Desktop/scripts/comprovantes/${fileName}`; // ----------------------- ALTERAR DEPOIS ----------------
-                    }
+            if (media.mimetype === 'application/pdf') {
+                const pdf = new PdfTextExtractor(filePath);
+                pdf.extractText()
+                .then(async (extractedText) => {
+                    if (extractedText && extractedText.includes(objeto.idPagamento)) {
+                        // console.log("A imagem contém o identificador correto: " + objeto.idPagamento);        
+                        const obj = await consultaSaldo(message.from);
+                        let saldoAtual = obj.saldo + objeto.valor;
+                        let idUser = obj.id;
         
-                    
-                    setTimeout(async () => {
+                        axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
+                            await client.sendMessage(message.from, `✔ Tudo certo! Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
+
+                            if((objeto.tipo == 'boleto') || (objeto.tipo == 'teste boleto')){
+                                objeto['passo'] = 3
+                                await client.sendMessage(message.from, 'Informe o tipo de boleto: \n\n1 - Cartão\n2 - Celpe\n3 - Compesa\n4 - Depósito\n5 - Financiamento\n6 - Internet/Celular\n7 - Outro')
+    
+                            } else {
+                                objeto = {}
+                            }
+                        })
+                    } else {
+                        console.log("A string não contém o identificador correto: " + objeto.idPagamento);
+                        await client.sendMessage(message.from, `❌ Desculpe, mas ocorreu um erro. Verifique o comprovante e tente novamente!`);
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+            }
+    
+            else if (message.hasMedia && message.type === 'image') {
+                const obj = await consultaSaldo(message.from);
+    
+                try {
+                    (async () => {
+                        const media = await message.downloadMedia();
+                        let ms = Date.now()
+                        const fileName = `${message.from}-${ms}.${media.mimetype.split('/')[1]}`;
+                        const filePath = path.join(__dirname, 'comprovantes/pix/original/', fileName);
+                        fs.writeFileSync(filePath, media.data, 'base64');
+                        console.log(`Imagem salva como: ${filePath}`);
                         
-                        const extractor = new ImageTextExtractor(caminhoArquivo);
-                        const extractedText = await extractor.extractText();
-                    
-                        console.log(objeto.idPagamento)
-                        if (extractedText && extractedText.includes(objeto.idPagamento)) {
-                            console.log("A imagem contém o identificador correto: " + objeto.idPagamento);
-
-                            const obj = await consultaSaldo(message.from);
-                            let saldoAtual = obj.saldo + objeto.valor;
-
-                            let idUser = obj.id;
-
-                            axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
-                                await client.sendMessage(message.from, `✔ Tudo certo! Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
-                            })
-
-                            objeto = {}
-
+                        //let ar = Aumentar Resolução(filePath)
+                        const imagePath = filePath;
+                        const outputPath = path.join(__dirname, 'comprovantes/pix/redimensionado/', fileName);
+                        const resizer = new ImageResizer(imagePath);
+                        let convertida = await resizer.resizeAndSave(outputPath);
+                
+                        // console.log("Valor convertida: " + convertida)    
+                        console.log("Imagem convertida: " + convertida)
+                                    
+                        let caminhoArquivo = "";
+                        // Exemplo de instanciação e uso da classe
+                        if(process.env.SO == 'windows'){
+                            caminhoArquivo = `C:\\Users\\suely\\Desktop\\nodejs\\whatsapp-web\\comprovantes\\pix\\redimensionado\\${fileName}`;
+                            
                         } else {
-                            console.log("A string não contém o identificador correto: " + objeto.idPagamento);
-                            await client.sendMessage(message.from, `❌ Desculpe, mas ocorreu um erro. Verifique o comprovante e tente novamente!`);
+                            caminhoArquivo = `/home/suelytohm/Desktop/scripts/comprovantes/${fileName}`; // ----------------------- ALTERAR DEPOIS ----------------
                         }
-                    }, 4000);
-                })();
-            } catch (error) {
-                console.error('Erro ao salvar a imagem:', error);
+            
+                        
+                        setTimeout(async () => {
+                            
+                            const extractor = new ImageTextExtractor(caminhoArquivo);
+                            const extractedText = await extractor.extractText();
+                        
+                            console.log(objeto.idPagamento)
+                            if (extractedText && extractedText.includes(objeto.idPagamento)) {
+                                console.log("A imagem contém o identificador correto: " + objeto.idPagamento);
+    
+                                const obj = await consultaSaldo(message.from);
+                                let saldoAtual = obj.saldo + objeto.valor;
+    
+                                let idUser = obj.id;
+    
+                                axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
+                                    await client.sendMessage(message.from, `✔ Tudo certo! Seu saldo é R$ ${parseFloat(saldoAtual).toFixed(2)}`);
+
+                                    if((objeto.tipo == 'boleto') || (objeto.tipo == 'teste boleto')){
+                                        objeto['passo'] = 3
+                                        await client.sendMessage(message.from, 'Informe o tipo de boleto: \n\n1 - Cartão\n2 - Celpe\n3 - Compesa\n4 - Depósito\n5 - Financiamento\n6 - Internet/Celular\n7 - Outro')
+    
+                                    } else {
+                                        objeto = {}
+                                    }
+                                })
+                            } else {
+                                console.log("A string não contém o identificador correto: " + objeto.idPagamento);
+                                await client.sendMessage(message.from, `❌ Desculpe, mas ocorreu um erro. Verifique o comprovante e tente novamente!`);
+                            }
+                        }, 4000);
+                    })();
+                } catch (error) {
+                    console.error('Erro ao salvar a imagem:', error);
+                }
             }
         }
     }
@@ -291,7 +325,7 @@ client.on('message', async (message) => {
         await client.sendMessage(message.from, `Informe o valor a ser pago`);
     }
 
-    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 1)){
+    else if((objeto.tipo === "boleto") && (message.from == objeto.numero) && (objeto.passo == 1)){
 
         const obj = await consultaSaldo(message.from);
         let total = message.body // parseFloat
@@ -304,10 +338,6 @@ client.on('message', async (message) => {
 
         let restante = obj.saldo - total
 
-        if(obj.saldo - total < 0){
-            // restante = Math.abs(restante)
-        }
-
         objeto = {
             tipo: 'boleto',
             numero: message.from,
@@ -317,10 +347,11 @@ client.on('message', async (message) => {
         }
 
         if(restante < 0){
+
             await client.sendMessage(message.from, `Seu saldo é: R$ ${formatarValor(obj.saldo)}, Copie o código abaixo e deposite o restante via pix:`);
-
+            
+            receberPix(message.from, total,'boleto')
             const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(restante).toString(), 'SAO PAULO', 'deposito');
-
             await client.sendMessage(message.from, payloadInstance.gerarPayload());
             await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
 
@@ -340,6 +371,24 @@ client.on('message', async (message) => {
         // await client.sendMessage(message.from, `Seu saldo é: R$ ${formatarValor(obj.saldo)}, Deseja realizar o pagamento agora?`);
     }
     
+    else if((objeto.tipo == 'deposito') && (objeto.passo == 2)){}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Continuar com pagamento
     else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 4)){
         await client.sendMessage(message.from, 'Deseja prosseguir com o pagamento?')
@@ -362,6 +411,93 @@ client.on('message', async (message) => {
 
 });
 
+
+
+client.on('message', async(message) => {
+    if(message.body === 'Test boleto'){
+        await client.sendMessage(message.from, `Informe o valor a ser pago`);
+        objeto = {
+            tipo: 'teste boleto',
+            numero: message.from,
+            passo: 1
+        }
+    }
+
+    else if((objeto.tipo === 'teste boleto') && (objeto.numero === message.from) && (objeto.passo === 1)){
+        const obj = await consultaSaldo(message.from);
+        let total = message.body // parseFloat
+
+        total = total.replace("R", "")
+        total = total.replace("$", "")
+        total = total.replace(" ", "")
+        total = total.replace(",", ".")
+        total = parseFloat(total).toFixed(2)
+
+        let restante = obj.saldo - total
+        restante = Math.abs(restante)
+
+        // objeto = {
+        //     tipo: 'teste boleto',
+        //     numero: message.from,
+        //     passo: 2,
+        //     totalBoleto: total,
+        //     restante: restante
+        // }
+
+        objeto[totalBoleto] = total;
+        objeto[restante] = restante;
+        objeto[passo] = 2;
+
+        if(total > obj.saldo){
+            // PASSO 2
+            receberPix(message.from, restante, 'teste boleto')
+        } else {
+            // objeto = {
+            //     tipo: 'teste boleto',
+            //     numero: message.from,
+            //     passo: 3,
+            //     totalBoleto: total,
+            //     restante: restante
+            // }
+            objeto[passo] = 3;
+
+            await client.sendMessage(message.from, 'Informe o tipo de boleto: \n\n1 - Cartão\n2 - Celpe\n3 - Compesa\n4 - Depósito\n5 - Financiamento\n6 - Internet/Celular\n7 - Outro')
+        }
+    }
+
+    else if((objeto.tipo === 'boleto') || (objeto.tipo === 'teste boleto') && (objeto.numero === message.from) && (objeto.passo === 3)){
+        const categoria = new Categorias(message.body);
+        
+        if(categoria.reconhecerEscolha() == null){
+            await client.sendMessage(message.from, '❌ Informe corretamente o tipo do boleto')
+            
+        } else {
+            objeto['passo'] = 4;
+            objeto['tipoBoleto'] = categoria.reconhecerEscolha();
+            await client.sendMessage(message.from, 'Informe os números do boleto')
+        }
+    }
+
+    else if((objeto.tipo === 'boleto') || (objeto.tipo === 'teste boleto') && (objeto.numero === message.from) && (objeto.passo === 4)){
+        await client.sendMessage(message.from, 'Aguarde um instante, estamos validando as informações e realizando o pagamento do boleto')
+
+        const linhaDigitadaBoleto = message.body;
+        
+        if(validarNumeroBoleto(linhaDigitadaBoleto)){
+            const boleto = {
+                usuario: "suelytohm",
+                codigoBoleto: linhaDigitadaBoleto,
+                tipo: objeto.tipoBoleto,
+                valor: chavePixValor
+            }
+
+            axios.post("https://test-boletos.onrender.com/boleto", boleto).then((response) => {
+                socket.emit('novo boleto', boleto);
+            })
+        }
+        console.log(objeto)
+    }
+})
 
 client.on('message', async (msg) => {
     if (msg.body === '!send-media') {
@@ -400,7 +536,7 @@ socket.on('enviar comprovante', async (data) => {
 });
 
 socket.on('depositar', async (data) => {
-    const response = await receberPix(data.telefone, data.valor)
+    const response = await receberPix(data.telefone, data.valor, 'deposito')
     console.log('Dados recebidos do servidor:', data);
     console.log(response);
 });
@@ -409,4 +545,3 @@ socket.on('depositar', async (data) => {
 socket.on('disconnect', () => {
     console.log('Desconectado do servidor Socket.IO');
 });
-
