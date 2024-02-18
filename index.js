@@ -142,19 +142,11 @@ async function receberPix(telefone, valor, tipoRecebimento){
     await client.sendMessage(verificarNumero(telefone), `Copie o código abaixo e deposite${restante} via pix:`);
     const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(valor).toString(), 'SAO PAULO', idPagamento);
     await client.sendMessage(verificarNumero(telefone), payloadInstance.gerarPayload());        
-    // await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
     await client.sendMessage(verificarNumero(telefone), `⚠ Envie o comprovante da transferência após a realização do pagamento`);
-
-    // objeto = {
-    //     tipo: tipoRecebimento,
-    //     numero: verificarNumero(telefone),
-    //     passo: 2,
-    //     valor: Math.abs(valor),
-    //     idPagamento: idPagamento
-    // }
-    objeto[passo] = 2;
-    objeto[valorPixRecebido] = Math.abs(valor);
-    objeto[idPagamento] = idPagamento;
+    
+    objeto["passo"] = 2;
+    objeto["valorPixRecebido"] = Math.abs(valor);
+    objeto["idPagamento"] = idPagamento;
 
 }
 
@@ -284,7 +276,6 @@ client.on('message', async (message) => {
                             if (extractedText && extractedText.includes(objeto.idPagamento)) {
                                 console.log("A imagem contém o identificador correto: " + objeto.idPagamento);
     
-                                const obj = await consultaSaldo(message.from);
                                 let saldoAtual = obj.saldo + objeto.valor;
     
                                 let idUser = obj.id;
@@ -377,18 +368,6 @@ client.on('message', async (message) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     // Continuar com pagamento
     else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 4)){
         await client.sendMessage(message.from, 'Deseja prosseguir com o pagamento?')
@@ -444,9 +423,9 @@ client.on('message', async(message) => {
         //     restante: restante
         // }
 
-        objeto[totalBoleto] = total;
-        objeto[restante] = restante;
-        objeto[passo] = 2;
+        objeto["totalBoleto"] = total;
+        objeto["restante"] = restante;
+        objeto["passo"] = 2;
 
         if(total > obj.saldo){
             // PASSO 2
@@ -459,7 +438,8 @@ client.on('message', async(message) => {
             //     totalBoleto: total,
             //     restante: restante
             // }
-            objeto[passo] = 3;
+            objeto["passo"] = 3;
+            objeto["restante"] = 0;
 
             await client.sendMessage(message.from, 'Informe o tipo de boleto: \n\n1 - Cartão\n2 - Celpe\n3 - Compesa\n4 - Depósito\n5 - Financiamento\n6 - Internet/Celular\n7 - Outro')
         }
@@ -479,23 +459,57 @@ client.on('message', async(message) => {
     }
 
     else if((objeto.tipo === 'boleto') || (objeto.tipo === 'teste boleto') && (objeto.numero === message.from) && (objeto.passo === 4)){
-        await client.sendMessage(message.from, 'Aguarde um instante, estamos validando as informações e realizando o pagamento do boleto')
+        await client.sendMessage(message.from, 'Aguarde um instante, estamos validando as informações')
 
         const linhaDigitadaBoleto = message.body;
         
         if(validarNumeroBoleto(linhaDigitadaBoleto)){
+            const obj = await consultaSaldo(message.from);
+
             const boleto = {
-                usuario: "suelytohm",
+                usuario: obj.nome,
                 codigoBoleto: linhaDigitadaBoleto,
                 tipo: objeto.tipoBoleto,
-                valor: chavePixValor
+                valor: objeto.totalBoleto
             }
 
-            axios.post("https://test-boletos.onrender.com/boleto", boleto).then((response) => {
-                socket.emit('novo boleto', boleto);
-            })
+            const idUser = obj.id;
+
+            if(obj.saldo > objeto.totalBoleto){
+                axios.post("https://test-boletos.onrender.com/boleto", boleto).then(async (response) => {
+                    if (response.status === 200) {
+                        console.log('Requisição bem-sucedida! Status code:', response.status);
+                        socket.emit('novo boleto', boleto);
+                        await client.sendMessage(message.from, '✔ Tudo certo! O pagamento do seu boleto será realizado em breve!')
+                        
+                        console.log(objeto)
+                        console.log(boleto)
+                        console.log(obj)
+
+                        const saldoAtual = obj.saldo - boleto.valor
+
+                        axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
+                            console.log("Saldo atualizado")
+                        })
+                        objeto = {}
+                    } else {
+                        console.log('Erro: ', response);
+                    }
+                })
+            } else {
+                await client.sendMessage(message.from, '❌ Verifique seu saldo e tente novamente!')
+                // objeto = {}
+            }
+
+
+            console.log(objeto)
+            console.log(boleto)
+            console.log(obj)
+
+        } else {
+            await client.sendMessage(message.from, '❌ Verifique a numeração do boleto e tente novamente!')
+
         }
-        console.log(objeto)
     }
 })
 
