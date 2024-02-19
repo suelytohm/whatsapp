@@ -1,0 +1,529 @@
+[
+    {
+        "nome": "Banco A.J. RENNER",
+        "compe": "654",
+        "ispb": "92874270"
+    },
+    {
+        "nome": "Banco ABC Brasil",
+        "compe": "246",
+        "ispb": "28195667"
+    },
+    {
+        "nome": "Banco ABN AMRO",
+        "compe": "75",
+        "ispb": "3532415"
+    },{
+        "nome": "Banco ALFA",
+        "compe": "25",
+        "ispb": "3323840"
+    },{
+        "nome": "Banco ARBI",
+        "compe": "213",
+        "ispb": "54403563"
+    },{
+        "nome": "Banco AZTECA do Brasil",
+        "compe": "19",
+        "ispb": "9391857"
+    },{
+        "nome": "Banco BARCLAYS",
+        "compe": "740",
+        "ispb": "61146577"
+    },{
+        "nome": "Banco BBM",
+        "compe": "107",
+        "ispb": "15114366"
+    },{
+        "nome": "Banco BMFBOVESPA",
+        "compe": "96",
+        "ispb": "997185"
+    },{
+        "nome": "Banco BMG",
+        "compe": "318",
+        "ispb": "61186680"
+    },{
+        "nome": "Banco BNP PARIBAS Brasil",
+        "compe": "752",
+        "ispb": "1522368"
+    },{
+        "nome": "Banco BOA VISTA INTERATLANTICO",
+        "compe": "248",
+        "ispb": "33485541"
+    },{
+        "nome": "Banco BONSUCESSO",
+        "compe": "218",
+        "ispb": "71027866"
+    },{
+        "nome": "Banco BRACCE",
+        "compe": "65",
+        "ispb": "48795256"
+    },{
+        "nome": "Banco BRADESCARD",
+        "compe": "63",
+        "ispb": "4184779"
+    },{
+        "nome": "Banco BRADESCO",
+        "compe": "237",
+        "ispb": "60746948"
+    },{
+        "nome": "Banco BRADESCO BBI",
+        "compe": "36",
+        "ispb": "60746948"
+    },{
+        "nome": "Banco BRADESCO CARTÕES",
+        "compe": "204",
+        "ispb": "59438325"
+    },{
+        "nome": "Banco BRADESCO FINANCIAMENTOS",
+        "compe": "394",
+        "ispb": "7207996"
+    },{
+        "nome": "Banco BTG PACTUAL",
+        "compe": "208",
+        "ispb": "30306294"
+    },{
+        "nome": "Banco CACIQUE",
+        "compe": "263",
+        "ispb": "33349358"
+    },{
+        "nome": "Banco CAIXA GERAL – Brasil",
+        "compe": "473",
+        "ispb": "33466988"
+    },{
+        "nome": "Banco CAPITAL",
+        "compe": "412",
+        "ispb": "15173776"
+    },{
+        "nome": "Banco CARGILL",
+        "compe": "40",
+        "ispb": "3609817"
+    },{
+        "nome": "Banco CEDULA",
+        "compe": "266",
+        "ispb": "33132044"
+    },{
+        "nome": "Banco CETELEM",
+        "compe": "739",
+        "ispb": "558456"
+    },{
+        "nome": "Banco CIFRA",
+        "compe": "233",
+        "ispb": "62421979"
+    },{
+        "nome": "Banco CITIBANK",
+        "compe": "745",
+        "ispb": "33479023"
+    },{
+        "nome": "Banco CLÁSSICO",
+        "compe": "241",
+        "ispb": "31597552"
+    },{
+        "nome": "Banco COOPERATIVO do Brasil – Bancoob",
+        "compe": "756",
+        "ispb": "2038232"
+    },{
+        "nome": "Banco COOPERATIVO SICREDI",
+        "compe": "748",
+        "ispb": "1181521"
+    },{
+        "nome": "Banco CREDIT AGRICOLE Brasil",
+        "compe": "222",
+        "ispb": "75647891"
+    },{
+        "nome": "Banco CREDIT SUISSE (Brasil)",
+        "compe": "505",
+        "ispb": "32062580"
+    },{
+        "nome": "Banco da AMAZONIA",
+        "compe": "3",
+        "ispb": "4902979"
+    },{
+        "nome": "Banco da CHINA Brasil",
+        "compe": "83",
+        "ispb": "10690848"
+    },{
+        "nome": "Banco DAYCOVAL",
+        "compe": "707",
+        "ispb": "62232889"
+    },{
+        "nome": "Banco de LA NACION ARGENTINA",
+        "compe": "300",
+        "ispb": "33042151"
+    },{
+        "nome": "Banco de LA PROVINCIA de BUENOS AIRES",
+        "compe": "495",
+        "ispb": "44189447"
+    },{
+        "nome": "Banco de LA REPUBLICA ORIENTAL DEL URUGUAY",
+        "compe": "494",
+        "ispb": "51938876"
+    },{
+        "nome": "Banco de TOKYO MITSUBISHI UFJ Brasil",
+        "compe": "456",
+        "ispb": "60498557"
+    },{
+        "nome": "Banco DIBENS",
+        "compe": "214",
+        "ispb": "61199881"
+    },{
+        "nome": "Banco do BRASIL",
+        "compe": "1",
+        "ispb": "0"
+    },{
+        "nome": "Banco do ESTADO de SERGIPE",
+        "compe": "47",
+        "ispb": "13009717"
+    },{
+        "nome": "Banco do ESTADO do PARA",
+        "compe": "37",
+        "ispb": "4913711"
+    },{
+        "nome": "Banco do ESTADO do RIO GRANDE do SUL (BANRISUL)",
+        "compe": "41",
+        "ispb": "92702067"
+    },{
+        "nome": "Banco do NORDESTE do Brasil",
+        "compe": "4",
+        "ispb": "7237373"
+    },{
+        "nome": "Banco FATOR",
+        "compe": "265",
+        "ispb": "33644196"
+    },{
+        "nome": "Banco FIBRA",
+        "compe": "224",
+        "ispb": "58616418"
+    },{
+        "nome": "Banco FICSA",
+        "compe": "626",
+        "ispb": "61348538"
+    },{
+        "nome": "Banco GERADOR",
+        "compe": "121",
+        "ispb": "10664513"
+    },{
+        "nome": "Banco GUANABARA",
+        "compe": "612",
+        "ispb": "31880826"
+    },{
+        "nome": "Banco INDUSTRIAL do Brasil",
+        "compe": "604",
+        "ispb": "31895683"
+    },{
+        "nome": "Banco INDUSTRIAL e COMERCIAL",
+        "compe": "320",
+        "ispb": "7450604"
+    },{
+        "nome": "Banco INDUSVAL",
+        "compe": "653",
+        "ispb": "61024352"
+    },{
+        "nome": "Banco INTERCAP",
+        "compe": "630",
+        "ispb": "58497702"
+    },{
+        "nome": "Banco INTERMEDIUM",
+        "compe": "77",
+        "ispb": "416968"
+    },{
+        "nome": "Banco INVESTCRED UNIBANCO",
+        "compe": "249",
+        "ispb": "61182408"
+    },{
+        "nome": "Banco ITAU BBA",
+        "compe": "184",
+        "ispb": "17298092"
+    },{
+        "nome": "Banco ITAÚ HOLDING FINANCEIRA",
+        "compe": "652",
+        "ispb": "60872504"
+    },{
+        "nome": "Banco J. SAFRA",
+        "compe": "74",
+        "ispb": "3017677"
+    },{
+        "nome": "Banco J.P. MORGAN",
+        "compe": "376",
+        "ispb": "33172537"
+    },{
+        "nome": "Banco JOHN DEERE",
+        "compe": "217",
+        "ispb": "91884981"
+    },{
+        "nome": "Banco KDB do Brasil",
+        "compe": "76",
+        "ispb": "7656500"
+    },{
+        "nome": "Banco KEB do Brasil",
+        "compe": "757",
+        "ispb": "2318507"
+    },{
+        "nome": "Banco LUSO BRASILEIRO",
+        "compe": "600",
+        "ispb": "59118133"
+    },{
+        "nome": "Banco MÁXIMA",
+        "compe": "243",
+        "ispb": "33923798"
+    },{
+        "nome": "Banco MERCANTIL do BRASIL",
+        "compe": "389",
+        "ispb": "17184037"
+    },{
+        "nome": "Banco MIZUHO do Brasil",
+        "compe": "370",
+        "ispb": "61088183"
+    },{
+        "nome": "Banco MODAL",
+        "compe": "746",
+        "ispb": "30723886"
+    },{
+        "nome": "Banco MORGAN STANLEY DEAN WITTER",
+        "compe": "66",
+        "ispb": "2801938"
+    },{
+        "nome": "Banco ORIGINAL",
+        "compe": "212",
+        "ispb": "92894922"
+    },{
+        "nome": "Banco ORIGINAL do Agronegócio",
+        "compe": "79",
+        "ispb": "9516419"
+    },{
+        "nome": "Banco PANAMERICANO",
+        "compe": "623",
+        "ispb": "59285411"
+    },{
+        "nome": "Banco PAULISTA",
+        "compe": "611",
+        "ispb": "61820817"
+    },{
+        "nome": "Banco PECUNIA",
+        "compe": "613",
+        "ispb": "60850229"
+    },{
+        "nome": "Banco PETRA",
+        "compe": "94",
+        "ispb": "11758741"
+    },{
+        "nome": "Banco PINE",
+        "compe": "643",
+        "ispb": "62144175"
+    },{
+        "nome": "Banco POTTENCIAL",
+        "compe": "735",
+        "ispb": "253448"
+    },{
+        "nome": "Banco RABOBANK INTERNATIONAL Brasil",
+        "compe": "747",
+        "ispb": "1023570"
+    },{
+        "nome": "Banco RANDON",
+        "compe": "88",
+        "ispb": "11476673"
+    },{
+        "nome": "Banco RENDIMENTO",
+        "compe": "633",
+        "ispb": "68900810"
+    },{
+        "nome": "Banco RIBEIRAO PRETO",
+        "compe": "741",
+        "ispb": "517645"
+    },{
+        "nome": "Banco RODOBENS",
+        "compe": "120",
+        "ispb": "33603457"
+    },{
+        "nome": "Banco SAFRA",
+        "compe": "422",
+        "ispb": "58160789"
+    },{
+        "nome": "Banco SANTANDER (Brasil)",
+        "compe": "33",
+        "ispb": "90400888"
+    },{
+        "nome": "Banco SEMEAR",
+        "compe": "743",
+        "ispb": "795423"
+    },{
+        "nome": "Banco SOCIETE GENERALE Brasil",
+        "compe": "366",
+        "ispb": "61533584"
+    },{
+        "nome": "Banco SOFISA",
+        "compe": "637",
+        "ispb": "60889128"
+    },{
+        "nome": "Banco SUMITOMO MITSUI Brasileiro",
+        "compe": "464",
+        "ispb": "60518222"
+    },{
+        "nome": "Banco TOPAZIO",
+        "compe": "82",
+        "ispb": "7679404"
+    },{
+        "nome": "Banco TRIÂNGULO",
+        "compe": "634",
+        "ispb": "17351180"
+    },{
+        "nome": "Banco VOTORANTIM",
+        "compe": "655",
+        "ispb": "59588111"
+    },{
+        "nome": "Banco VR",
+        "compe": "610",
+        "ispb": "78626983"
+    },{
+        "nome": "Banco WESTERN UNION do Brasil",
+        "compe": "119",
+        "ispb": "13720915"
+    },{
+        "nome": "Banco WOORI BANK do Brasil",
+        "compe": "124",
+        "ispb": "15357060"
+    },{
+        "nome": "BANESTES (Banco do ESTADO do ESPIRITO SANTO)",
+        "compe": "21",
+        "ispb": "28127603"
+    },{
+        "nome": "BANIF – Banco INTERNACIONAL do FUNCHAL (Brasil)",
+        "compe": "719",
+        "ispb": "33884941"
+    },{
+        "nome": "BANK OF AMERICA MERRILL LYNCH Banco Múltiplo",
+        "compe": "755",
+        "ispb": "62073200"
+    },{
+        "nome": "BCV – Banco de Crédito e Varejo",
+        "compe": "250",
+        "ispb": "50585090"
+    },{
+        "nome": "BES Investimento do Brasil – Banco de Investimento",
+        "compe": "78",
+        "ispb": "34111187"
+    },{
+        "nome": "BM TRICURY",
+        "compe": "18",
+        "ispb": "57839805"
+    },{
+        "nome": "BNY MELLON",
+        "compe": "17",
+        "ispb": "42272526"
+    },{
+        "nome": "BPN Brasil Banco Múltiplo",
+        "compe": "69",
+        "ispb": "61033106"
+    },{
+        "nome": "BRADESCO BERJ",
+        "compe": "122",
+        "ispb": "33147315"
+    },{
+        "nome": "BRASIL PLURAL Banco Múltiplo",
+        "compe": "125",
+        "ispb": "45246410"
+    },{
+        "nome": "BRB – Banco de Brasília",
+        "compe": "70",
+        "ispb": "208"
+    },{
+        "nome": "BRICKELL Crédito, Financiamento e Investimento",
+        "compe": "92",
+        "ispb": "12865507"
+    },{
+        "nome": "CAIXA ECONOMICA FEDERAL",
+        "compe": "104",
+        "ispb": "360305"
+    },{
+        "nome": "CC CREDICOAMO Crédito Rural Cooperativa",
+        "compe": "10",
+        "ispb": "81723108"
+    },{
+        "nome": "CC UNICRED Brasil Central",
+        "compe": "112",
+        "ispb": "4243780"
+    },{
+        "nome": "CC UNICRED do Brasil",
+        "compe": "136",
+        "ispb": "315557"
+    },{
+        "nome": "CC UNIPRIME NORTE do PARANA",
+        "compe": "84",
+        "ispb": "2398976"
+    },{
+        "nome": "CECOOPES – Central das Cooperativas de Economia e Crédito Mútuo",
+        "compe": "114",
+        "ispb": "5790149"
+    },{
+        "nome": "CITIBANK N.A.",
+        "compe": "477",
+        "ispb": "33042953"
+    },{
+        "nome": "Cooperativa Central de Crédito do Estado de SP",
+        "compe": "90",
+        "ispb": "73085573"
+    },{
+        "nome": "Cooperativa Central de Crédito NOROESTE Brasileiro",
+        "compe": "97",
+        "ispb": "4632856"
+    },{
+        "nome": "Cooperativa Central de Crédito Urbano – CECRED",
+        "compe": "85",
+        "ispb": "5463212"
+    },{
+        "nome": "Cooperativa de Crédito Rural da Região da Mogiana",
+        "compe": "89",
+        "ispb": "62109566"
+    },{
+        "nome": "CREDIALIANCA Cooperativa de Crédito RURAL",
+        "compe": "98",
+        "ispb": "78157146"
+    },{
+        "nome": "DEUTSCHE BANK – Banco ALEMÃO",
+        "compe": "487",
+        "ispb": "62331228"
+    },{
+        "nome": "HIPERCARD Banco Múltiplo",
+        "compe": "62",
+        "ispb": "3012230"
+    },{
+        "nome": "HSBC BANK Brasil – Banco Múltiplo",
+        "compe": "399",
+        "ispb": "1701201"
+    },{
+        "nome": "ICBC do Brasil Banco Múltiplo",
+        "compe": "132",
+        "ispb": "17453575"
+    },{
+        "nome": "ING BANK N.V.",
+        "compe": "492",
+        "ispb": "49336860"
+    },{
+        "nome": "ITAÚ UNIBANCO",
+        "compe": "341",
+        "ispb": "60701190"
+    },{
+        "nome": "NOVO Banco CONTINENTAL",
+        "compe": "753",
+        "ispb": "74828799"
+    },{
+        "nome": "PARANA Banco",
+        "compe": "254",
+        "ispb": "14388334"
+    },{
+        "nome": "SCOTIABANK Brasil Banco Múltiplo",
+        "compe": "751",
+        "ispb": "29030467"
+    },{
+        "nome": "UNICRED Central RS – Central de Cooperativa de Economia e Crédito Mútuo do Estado do RS",
+        "compe": "91",
+        "ispb": "1634601"
+    },{
+        "nome": "UNICRED Central Santa Catarina",
+        "compe": "87",
+        "ispb": "543968"
+    },{
+        "nome": "UNIPRIME Central – Central Interestadual de Cooperativa de Crédito",
+        "compe": "99",
+        "ispb": "3046391"
+    }
+]

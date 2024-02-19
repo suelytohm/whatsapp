@@ -498,7 +498,7 @@ client.on('message', async(message) => {
                 })
             } else {
                 await client.sendMessage(message.from, '❌ Verifique seu saldo e tente novamente!')
-                // objeto = {}
+                objeto = {}
             }
 
 
