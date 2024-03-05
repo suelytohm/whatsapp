@@ -23,7 +23,7 @@ let objeto = {}
 
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: 'celcoin3'
+        dataPath: 'celcoin'
     })
 });
 
@@ -67,30 +67,52 @@ function dataAtual(){
     let hora = String(data.getHours()).padStart(2, '0');
     let minutos = String(data.getMinutes()).padStart(2, '0');
 
-    return "Mensagem enviada " + dia + "/" + mes + "/" + ano + " as " + hora + ":" + minutos + "hrs";
+    return "Mensagem enviada " + dia + "/" + mes + "/" + ano + " às " + hora + ":" + minutos;
 }
 
 function formatarValor(numero){
+    if(numero == null){
+        return 0
+    }
     return numero.toFixed(2).replace(".", ","); // Substitui o ponto pela vírgula
 }
 
 function verificarNumero(telefone){
 
-    if(telefone.includes("@")){
-        return telefone
+    if(telefone != null){
+        if(telefone.includes("@")){
+            return telefone
+        }
+    
+        let numero = "";
+    
+        if(telefone.length == 11){
+            let numeroFim = telefone.substring(3, telefone.length)
+            let numeroInicio = telefone.substring(0, 2)
+            numero = `${numeroInicio}${numeroFim}`;
+        } else {
+            numero = telefone
+        }
+        return `55${numero}@c.us`
     }
-
-    let numero = "";
-
-    if(telefone.length == 11){
-        let numeroFim = telefone.substring(3, telefone.length)
-        let numeroInicio = telefone.substring(0, 2)
-        numero = `${numeroInicio}${numeroFim}`;
-    } else {
-        numero = telefone
-    }
-    return `55${numero}@c.us`
 }
+
+function tratarTipo(str){
+    let tipo = str
+
+    switch (tipo) {
+      case "deposito":
+        str = "Depósito"
+        break;
+      case "cartao":
+        str = "Cartão"
+        break;      
+      default:
+        break;
+    }
+
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
 
 
 
@@ -102,7 +124,7 @@ async function enviarComprovante(numeroDestinatario, user, nomeComprovante, data
         caminhoArquivo = `/home/suelytohm/Desktop/scripts/comprovantes/${nomeComprovante}`;
     }
 
-    const mensagem = `Olá ${capitalize(user)}, aqui está o seu comprovante! \n\n${tipoPagamento}\nData do pagamento: ${datapagamento}\nValor: R$ ${valor} \n\n${dataAtual()}`
+    const mensagem = `Olá ${capitalize(user)}, aqui está o seu comprovante! \n\n${tratarTipo(tipoPagamento)}\nData do pagamento: ${datapagamento}\nValor: R$ ${valor} \n\n${dataAtual()}`
     const media = MessageMedia.fromFilePath(caminhoArquivo);
 
     client.sendMessage(verificarNumero(numeroDestinatario), media, { caption: mensagem }) // ----------------------------- VERIFICAR VALIDAÇÃO DO NÚMERO
@@ -151,10 +173,42 @@ async function receberPix(telefone, valor, tipoRecebimento){
 }
 
 
-client.on('message', async (message) => {
-    const obj = await consultaSaldo(message.from);
+function removerAcentosECaracteresEspeciais(texto) {
+    return texto.normalize("NFD").replace(/[\u0300-\u036f|\u00b4|\u0060|\u005e|\u007e]/g, "");
+}
 
+
+
+
+client.on('message', async (message) => {
+    let entrada = message.body.toLowerCase();
+    entrada = removerAcentosECaracteresEspeciais(message.body.toLowerCase());
+    const valoresPermitidos = ['Olá', 'ola', 'olá', 'OLÁ', 'Bom dia', 'bom dia', 'BOM DIA'];
+    // const valoresPermitidosLowerCase = valoresPermitidos.map(valor => valor.toLowerCase());
+    const valoresPermitidosNormalizados = valoresPermitidos.map(valor => removerAcentosECaracteresEspeciais(valor.toLowerCase()));
+
+    if (valoresPermitidosNormalizados.includes(entrada)) {
+        const obj = await consultaSaldo(message.from);
+        let user = "";
+        if(obj){
+            user = ` ${obj.nome.charAt(0).toUpperCase() + obj.nome.slice(1)}`
+        }
+        const saudacao = [`Tudo bem${user}? Como posso ser útil para você hoje?`, `Olá${user}! Como posso te ajudar?`, `Olá${user}, como posso te auxiliar?`]
+        const indiceSorteado = Math.floor(Math.random() * saudacao.length);
+        await client.sendMessage(message.from, saudacao[indiceSorteado]);
+    } else {
+        // await client.sendMessage(message.from, "Olá! Vi que você não tem nenhum registro no nosso sistema.\nO cadastro é super rápido, informe o seu nome para começarmos");
+
+        // await client.sendMessage(message.from, "Ótimo, agora informe o seu e-mail");
+
+        // await client.sendMessage(message.from, "✔ Tudo certo, o seu cadastro foi realizado! Agora já podemos realizar pagamentos de boletos via pix.");
+    }
+})
+
+
+client.on('message', async (message) => {
     if ((message.body === 'saldo') || (message.body === 'Saldo')) {
+        const obj = await consultaSaldo(message.from);
         if (obj && message.from === verificarNumero(obj.telefone)) {
             await message.reply(`Seu saldo é: R$ ${formatarValor(obj.saldo)}`);
         } else {
@@ -210,9 +264,9 @@ client.on('message', async (message) => {
                 pdf.extractText()
                 .then(async (extractedText) => {
                     if (extractedText && extractedText.includes(objeto.idPagamento)) {
-                        // console.log("A imagem contém o identificador correto: " + objeto.idPagamento);        
+                        // console.log("A imagem contém o identificador correto: " + objeto.idPagamento);
                         const obj = await consultaSaldo(message.from);
-                        let saldoAtual = obj.saldo + objeto.valor;
+                        let saldoAtual = obj.saldo + objeto.valorPixRecebido;
                         let idUser = obj.id;
         
                         axios.put(`https://test-boletos.onrender.com/atualizarSaldo/${idUser}`, { saldoatualizado: saldoAtual }).then( async () => {
@@ -276,7 +330,7 @@ client.on('message', async (message) => {
                             if (extractedText && extractedText.includes(objeto.idPagamento)) {
                                 console.log("A imagem contém o identificador correto: " + objeto.idPagamento);
     
-                                let saldoAtual = obj.saldo + objeto.valor;
+                                let saldoAtual = obj.saldo + objeto.valorPixRecebido;
     
                                 let idUser = obj.id;
     
@@ -306,94 +360,10 @@ client.on('message', async (message) => {
 });
 
 
-client.on('message', async (message) => {
-    if((objeto.tipo === "boleto") && (message.body === 'Pagar boleto') || (message.body === 'pagar boleto') || (message.body === 'Boleto') || (message.body === 'boleto') || (message.body === 'PAGAR BOLETO')) {
-        objeto = {
-            tipo: 'boleto',
-            numero: message.from,
-            passo: 1,
-        }
-        await client.sendMessage(message.from, `Informe o valor a ser pago`);
-    }
-
-    else if((objeto.tipo === "boleto") && (message.from == objeto.numero) && (objeto.passo == 1)){
-
-        const obj = await consultaSaldo(message.from);
-        let total = message.body // parseFloat
-
-        total = total.replace("R", "")
-        total = total.replace("$", "")
-        total = total.replace(" ", "")
-        total = total.replace(",", ".")
-        total = parseFloat(total).toFixed(2)
-
-        let restante = obj.saldo - total
-
-        objeto = {
-            tipo: 'boleto',
-            numero: message.from,
-            passo: 2,
-            totalBoleto: total,
-            restante: restante
-        }
-
-        if(restante < 0){
-
-            await client.sendMessage(message.from, `Seu saldo é: R$ ${formatarValor(obj.saldo)}, Copie o código abaixo e deposite o restante via pix:`);
-            
-            receberPix(message.from, total,'boleto')
-            const payloadInstance = new Payload('ROSENILDO SUELYTOHM DE OL', "617ea695-815b-4593-94b8-a924a560443b", Math.abs(restante).toString(), 'SAO PAULO', 'deposito');
-            await client.sendMessage(message.from, payloadInstance.gerarPayload());
-            await client.sendMessage(message.from, `Você confirma que o depósito foi realizado?`);
-
-        } else {
-            objeto = {
-                tipo: 'boleto',
-                numero: message.from,
-                passo: 2,
-            }
-            // await client.sendMessage(message.from, `Deseja prosseguir com o pagamento?`);
-            await client.sendMessage(message.from, `Seu saldo agora é: R$ ${formatarValor(obj.saldo)}, Deseja realizar o pagamento agora?`);
-        }
-    }
-
-    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 2)){
-        const obj = await consultaSaldo(message.from);
-        // await client.sendMessage(message.from, `Seu saldo é: R$ ${formatarValor(obj.saldo)}, Deseja realizar o pagamento agora?`);
-    }
-    
-    else if((objeto.tipo == 'deposito') && (objeto.passo == 2)){}
-
-
-
-
-
-    // Continuar com pagamento
-    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 4)){
-        await client.sendMessage(message.from, 'Deseja prosseguir com o pagamento?')
-    }
-
-    // Tipo
-    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 5)){
-        await client.sendMessage(message.from, 'Informe o tipo de boleto: \n\n1 - Cartão\n2 - Celpe\n3 - Compesa\n4 - Depósito\n5 - Financiamento\n6 - Internet/Celular\n7 - Outro')
-    }
-    
-    // Números
-    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 6)){
-        await client.sendMessage(message.from, 'Informe os números do boleto')
-    }
-
-    // Envio
-    else if((objeto.tipo === "boleto") &&(message.from == objeto.numero) && (objeto.passo == 7)){
-        await client.sendMessage(message.from, 'Tudo certo! Aguarde que estamos realizando o pagamento, em breve o seu comprovante estará disponível!')
-    }
-
-});
-
-
 
 client.on('message', async(message) => {
-    if(message.body === 'Test boleto'){
+    if((message.body === 'Pagar boleto') || (message.body === 'pagar boleto') || (message.body === 'Boleto') || (message.body === 'boleto') || (message.body === 'PAGAR BOLETO')) {
+    // if(message.body === 'Test boleto'){
         await client.sendMessage(message.from, `Informe o valor a ser pago`);
         objeto = {
             tipo: 'teste boleto',
@@ -415,29 +385,16 @@ client.on('message', async(message) => {
         let restante = obj.saldo - total
         restante = Math.abs(restante)
 
-        // objeto = {
-        //     tipo: 'teste boleto',
-        //     numero: message.from,
-        //     passo: 2,
-        //     totalBoleto: total,
-        //     restante: restante
-        // }
-
         objeto["totalBoleto"] = total;
         objeto["restante"] = restante;
         objeto["passo"] = 2;
+
+        console.log(objeto)
 
         if(total > obj.saldo){
             // PASSO 2
             receberPix(message.from, restante, 'teste boleto')
         } else {
-            // objeto = {
-            //     tipo: 'teste boleto',
-            //     numero: message.from,
-            //     passo: 3,
-            //     totalBoleto: total,
-            //     restante: restante
-            // }
             objeto["passo"] = 3;
             objeto["restante"] = 0;
 
@@ -470,12 +427,13 @@ client.on('message', async(message) => {
                 usuario: obj.nome,
                 codigoBoleto: linhaDigitadaBoleto,
                 tipo: objeto.tipoBoleto,
-                valor: objeto.totalBoleto
+                valor: objeto.totalBoleto,
+                telefone: obj.telefone
             }
 
             const idUser = obj.id;
 
-            if(obj.saldo > objeto.totalBoleto){
+            if(obj.saldo >= objeto.totalBoleto){
                 axios.post("https://test-boletos.onrender.com/boleto", boleto).then(async (response) => {
                     if (response.status === 200) {
                         console.log('Requisição bem-sucedida! Status code:', response.status);

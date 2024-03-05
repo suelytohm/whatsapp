@@ -14,7 +14,6 @@ class Identificador {
             return indice;
         }
     
-        // Gerar quatro letras aleatórias
         for (let i = 0; i < 6; i++) {
             // Excluindo as letras já escolhidas
             const exclusoes = letrasAleatorias.split('');

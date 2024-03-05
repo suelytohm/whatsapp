@@ -8,7 +8,7 @@ class ImageTextExtractor {
     try {
       const result = await Tesseract.recognize(
         this.imagePath,
-        'eng', // Inglês, Chinês ou Russo
+        'por', // Inglês, Chinês ou Russo
         // { logger: m => console.log(m) } // opcional: para ver logs no console
       );
       console.log('Texto extraído:', result.data.text);
